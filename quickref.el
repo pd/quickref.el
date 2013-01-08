@@ -243,7 +243,7 @@ the file at `quickref-save-file'."
   :init-value nil
   :lighter " qr"
   :keymap `((,quickref-command-prefix . quickref-mode-keymap))
-  (when quickref-mode (quickref-load-save-file)))
+  (when (and quickref-mode (null quickref-refs)) (quickref-load-save-file)))
 
 ;;;###autoload
 (define-globalized-minor-mode quickref-global-mode
