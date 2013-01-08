@@ -176,9 +176,10 @@ the width of the echo area."
 ;; Interactive
 (defun quickref-in-echo-area (topics)
   "Display quickref in the echo area."
-  (interactive (list (if current-prefix-arg
-                         (list (quickref-read-topic))
-                       (quickref-guess-topics))))
+  (interactive (list
+                (let ((guessed (quickref-guess-topics)))
+                  (if (or current-prefix-arg (null guessed)) (list (quickref-read-topic))
+                    (quickref-guess-topics)))))
   (let ((notes (-reject 'null (mapcar 'quickref-notes topics))))
     (funcall quickref-message-function "%s" (quickref-build-message (apply 'append notes)))))
 
