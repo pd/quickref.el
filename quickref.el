@@ -87,6 +87,8 @@ or the notes of all guessed topics."
 
 (define-prefix-command 'quickref-mode-keymap)
 (define-key quickref-mode-keymap (kbd "e") 'quickref-in-echo-area)
+(define-key quickref-mode-keymap (kbd "w") 'quickref-in-window)
+(define-key quickref-mode-keymap (kbd "0") 'quickref-dismiss-window)
 (define-key quickref-mode-keymap (kbd "a") 'quickref-add-note)
 (define-key quickref-mode-keymap (kbd "d") 'quickref-delete-note)
 (define-key quickref-mode-keymap (kbd "v") 'quickref-describe-refs)
@@ -96,7 +98,17 @@ or the notes of all guessed topics."
 (defvar quickref-refs nil
   "The list of quickref topics mapped to their notes.")
 
+(defun quickref-interactive-topics ()
+  "Guess a topic, or interactively read it from the minibuffer if
+`current-prefix-arg' or no topic could be guessed."
+  (let ((guessed (quickref-guess-topics)))
+    (if (or current-prefix-arg (null guessed))
+        (list (quickref-read-topic))
+      guessed)))
+
 (defun quickref-guess-topics ()
+  "Collect the results of successively calling the `quickref-guess-topics-functions'
+and return the guessed topics as a list."
   (let ((guesses (-reject 'null (mapcar 'funcall quickref-guess-topics-functions))))
     (-distinct
      (-flatten (cond
@@ -122,6 +134,8 @@ or the notes of all guessed topics."
               (mapcar 'symbol-name active-modes))))
 
 (defun quickref-read-topic ()
+  "Read a topic name, using `ido-completing-read' (or
+`completing-read' if unavailable)."
   (let ((topic-names (mapcar 'car quickref-refs))
         (guessed (car (quickref-guess-topics))))
     (if (fboundp 'ido-completing-read)
@@ -173,16 +187,50 @@ the width of the echo area."
   (quickref-join-into-lines (mapcar 'quickref-format notes)
                             (propertize quickref-separator 'face 'quickref-separator-face)))
 
+(defun quickref-find-buffer ()
+  "Find or create the *QuickRef* buffer."
+  (get-buffer-create "*QuickRef*"))
+
+(defun quickref-display-topics-in-buffer (buf topics)
+  "Display the quickref notes for TOPICS in buffer BUF."
+  (with-current-buffer buf
+    (delete-region (point-min) (point-max))
+    (dolist (topic topics)
+      (insert topic ": " (quickref-build-message (quickref-notes topic)) "\n"))))
+
+(defun quickref-find-window ()
+  "Return the window currently displaying the quickref buffer, if any."
+  (let ((buf (quickref-find-buffer)))
+    (--first (eq buf (window-buffer it)) (window-list))))
+
+(defun quickref-split-window ()
+  "Create a new window suitable for displaying a quickref by splitting
+the selected window."
+  (save-excursion (split-window-below -10)))
+
 ;; Interactive
 ;;;###autoload
 (defun quickref-in-echo-area (topics)
   "Display quickref in the echo area."
-  (interactive (list
-                (let ((guessed (quickref-guess-topics)))
-                  (if (or current-prefix-arg (null guessed)) (list (quickref-read-topic))
-                    (quickref-guess-topics)))))
+  (interactive (list (quickref-interactive-topics)))
   (let ((notes (-reject 'null (mapcar 'quickref-notes topics))))
     (funcall quickref-message-function "%s" (quickref-build-message (apply 'append notes)))))
+
+;;;###autoload
+(defun quickref-in-window (topics)
+  "Display quickref in a window at the bottom of the current window.
+Use `quickref-dismiss-window' to hide it again."
+  (interactive (list (quickref-interactive-topics)))
+  (let ((buf (quickref-find-buffer))
+        (win (or (quickref-find-window) (quickref-split-window))))
+    (quickref-display-topics-in-buffer buf topics)
+    (set-window-buffer win buf)))
+
+(defun quickref-dismiss-window ()
+  "Close the current quickref window, if any."
+  (interactive)
+  (let ((win (quickref-find-window)))
+    (when (window-live-p win) (delete-window win))))
 
 ;;;###autoload
 (defun quickref-add-note (topic label note)

@@ -17,18 +17,18 @@ Use [MELPA](https://github.com/milkypostman/melpa): `M-x package-install quickre
 
 Load it, enable it globally:
 
-```scheme
+~~~ scheme
 (require 'quickref)
 (quickref-global-mode +1)
-```
+~~~
 
 By default, all actions will be available beneath the prefix `C-c q`. You can
 change this easily:
 
-```scheme
+~~~ scheme
 (setq quickref-command-prefix (kbd "C-M-q"))
 (quickref-global-mode +1)
-```
+~~~
 
 Your quickref entries are stored in the file named by `quickref-save-file`,
 which defaults to `<user-emacs-directory>/quickrefs`. It's probably useful
@@ -37,9 +37,11 @@ to keep this file in source control;
 anyway.
 
 ## Usage
-1. Guess relevant topics and display their notes: `C-c q e`
+1. Guess relevant topics and display their notes in the echo area: `C-c q e`
 2. Prompt for a topic and display its notes: `C-u C-c q e`
-3. Add a note: `C-c q a`
-4. Delete a note: `C-c q d`
-5. Save your quickrefs to disk: `C-c q C-s`
-6. Reload your quickrefs from disk: `C-c q C-r`
+3. Display notes in a short window at the bottom of the selected window: `C-c q w`
+4. Dismiss that window: `C-c q 0`
+5. Add a note: `C-c q a`
+6. Delete a note: `C-c q d`
+7. Save your quickrefs to disk: `C-c q C-s`
+8. Reload your quickrefs from disk: `C-c q C-r`
