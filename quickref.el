@@ -174,6 +174,7 @@ the width of the echo area."
                             (propertize quickref-separator 'face 'quickref-separator-face)))
 
 ;; Interactive
+;;;###autoload
 (defun quickref-in-echo-area (topics)
   "Display quickref in the echo area."
   (interactive (list
@@ -183,6 +184,7 @@ the width of the echo area."
   (let ((notes (-reject 'null (mapcar 'quickref-notes topics))))
     (funcall quickref-message-function "%s" (quickref-build-message (apply 'append notes)))))
 
+;;;###autoload
 (defun quickref-add-note (topic label note)
   "Add a new quickref note."
   (interactive (list (quickref-read-topic)
@@ -194,6 +196,7 @@ the width of the echo area."
         (nconc (cdr ref) (list entry))
       (nconc quickref-refs (list (cons topic (list entry)))))))
 
+;;;###autoload
 (defun quickref-delete-note (topic label)
   "Delete a quickref note."
   (interactive
@@ -202,6 +205,7 @@ the width of the echo area."
   (let ((ref (assoc topic quickref-refs)))
     (when ref (assq-delete-all label ref))))
 
+;;;###autoload
 (defun quickref-load-save-file ()
   "If `quickref-save-file' exists, sets `quickref-refs' to
 the contents therein."
@@ -211,6 +215,7 @@ the contents therein."
       (insert-file-contents quickref-save-file)
       (setq quickref-refs (read (buffer-string))))))
 
+;;;###autoload
 (defun quickref-write-save-file ()
   "Writes the pretty printed contents of `quickref-refs' to
 the file at `quickref-save-file'."
@@ -223,16 +228,19 @@ the file at `quickref-save-file'."
     (save-buffer)
     (kill-buffer)))
 
+;;;###autoload
 (defun quickref-describe-refs ()
   "`describe-variable' `quickref-refs'."
   (interactive)
   (describe-variable 'quickref-refs))
 
+;;;###autoload
 (defun turn-on-quickref-mode ()
   "Turn on `quickref-mode'."
   (interactive)
   (quickref-mode +1))
 
+;;;###autoload
 (defun turn-off-quickref-mode ()
   "Turn off `quickref-mode'."
   (interactive)
