@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Quickref.el by pd</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Quickref.el</h1>
+        <p>Display relevant notes-to-self in the echo area</p>
+
+        <p class="view"><a href="https://github.com/pd/quickref.el">View the Project on GitHub <small>pd/quickref.el</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/pd/quickref.el/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/pd/quickref.el/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/pd/quickref.el">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>quickref.el</h1>
+
+<p>Quickly record notes for yourself, which can then be displayed back to
+you in the echo area on demand. Notes are organized by topic, and
+relevant notes are typically deduced for you based on context. If your
+current major-mode, any of its parents, or any active minor mode is
+the name of a topic, those notes will be considered relevant and
+displayed to you.</p>
+
+<p>I use this as an easy way to remind myself of that fancy-new-keybinding
+I found last week but can't ever remember when I need it:</p>
+
+<p><img src="https://github.com/pd/quickref.el/raw/master/screenshot.png" alt="Example screenshot"></p>
+
+<h2>Installation</h2>
+
+<p>Use <a href="https://github.com/milkypostman/melpa">MELPA</a>: <code>M-x package-install quickref</code>.</p>
+
+<p>Load it, enable it globally:</p>
+
+<div class="highlight"><pre><span class="p">(</span><span class="nf">require</span> <span class="ss">'quickref</span><span class="p">)</span>
+<span class="p">(</span><span class="nf">quickref-global-mode</span> <span class="nv">+1</span><span class="p">)</span>
+</pre></div>
+
+<p>By default, all actions will be available beneath the prefix <code>C-c q</code>. You can
+change this easily:</p>
+
+<div class="highlight"><pre><span class="p">(</span><span class="nf">setq</span> <span class="nv">quickref-command-prefix</span> <span class="p">(</span><span class="nf">kbd</span> <span class="s">"C-M-q"</span><span class="p">))</span>
+<span class="p">(</span><span class="nf">quickref-global-mode</span> <span class="nv">+1</span><span class="p">)</span>
+</pre></div>
+
+<p>Your quickref entries are stored in the file named by <code>quickref-save-file</code>,
+which defaults to <code>&lt;user-emacs-directory&gt;/quickrefs</code>. It's probably useful
+to keep this file in source control;
+<a href="https://github.com/pd/dotfiles/blob/master/emacs.d/quickrefs">I do</a>,
+anyway.</p>
+
+<h2>Usage</h2>
+
+<ol>
+<li>Guess relevant topics and display their notes in the echo area: <code>C-c q e</code>
+</li>
+<li>Prompt for a topic and display its notes: <code>C-u C-c q e</code>
+</li>
+<li>Display notes in a short window at the bottom of the selected window: <code>C-c q w</code>
+</li>
+<li>Dismiss that window: <code>C-c q 0</code>
+</li>
+<li>Add a note: <code>C-c q a</code>
+</li>
+<li>Delete a note: <code>C-c q d</code>
+</li>
+<li>Save your quickrefs to disk: <code>C-c q C-s</code>
+</li>
+<li>Reload your quickrefs from disk: <code>C-c q C-r</code>
+</li>
+</ol>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/pd">pd</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
