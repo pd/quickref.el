@@ -44,4 +44,4 @@ anyway.
 5. Add a note: `C-c q a`
 6. Delete a note: `C-c q d`
 7. Save your quickrefs to disk: `C-c q C-s`
-8. Reload your quickrefs from disk: `C-c q C-r`
+8. Reload your quickrefs from disk: `C-c q C-l`
