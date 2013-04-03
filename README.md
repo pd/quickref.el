@@ -33,7 +33,7 @@ change this easily:
 Your quickref entries are stored in the file named by `quickref-save-file`,
 which defaults to `<user-emacs-directory>/quickrefs`. It's probably useful
 to keep this file in source control;
-[I do](https://github.com/pd/dotfiles/blob/master/emacs.d/quickrefs),
+[I do](https://github.com/pd/dotfiles/blob/master/emacs.d/store/quickrefs.el),
 anyway.
 
 ## Usage
