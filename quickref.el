@@ -5,13 +5,12 @@
 ;; Version: 0.2
 ;; Package-Requires: ((dash "1.0.3") (s "1.0.0"))
 
-;;; TODO:
-;; cukes would be nice
-;; quickref-guess-topics-by-thing-at-point
-;; quickref-propertize-{label,note}-functions: list of functions that
-;;   will apply new properties to labels and notes; these could make
-;;   it possible to click an fn name to view its docs, or click a
-;;   keybinding to run it, etc.
+;;; Commentary:
+
+;; Easily create and retrieve notes-to-self, defaulting to notes regarding
+;; the active modes in your current buffer.
+
+;;; Code:
 
 (require 'dash)
 (require 's)
@@ -33,16 +32,15 @@
 (defcustom quickref-guess-topics-functions '(quickref-guess-topic-by-major-mode
                                              quickref-guess-topics-by-derived-mode
                                              quickref-guess-topics-by-minor-modes)
-  "List of functions, called in order, to be used to guess the
-relevant quickref topics. The function will be called with no
-arguments, and should return the name of a topic to display,
-a list of topic names, or nil if none."
+  "List of functions used to guess relevant quickref topics.
+
+The functions are called in order, with no arguments, and should return the
+name of a topic to display, a list of topic names, or nil if none."
   :type 'list
   :group 'quickref)
 
 (defcustom quickref-show-guesses 'all
-  "Whether to display the notes of only the first guessed topic,
-or the notes of all guessed topics."
+  "Controls which guesses to show when called without an explicit topic."
   :type '(choice (const :tag "Never guess" nil)
                  (symbol :tag "First guess" 'first)
                  (symbol :tag "All guesses" 'all))
@@ -99,16 +97,14 @@ or the notes of all guessed topics."
   "The list of quickref topics mapped to their notes.")
 
 (defun quickref-interactive-topics ()
-  "Guess a topic, or interactively read it from the minibuffer if
-`current-prefix-arg' or no topic could be guessed."
+  "Guess or read a topic, returning relevant topics as a list."
   (let ((guessed (quickref-guess-topics)))
     (if (or current-prefix-arg (null guessed))
         (list (quickref-read-topic))
       guessed)))
 
 (defun quickref-guess-topics ()
-  "Collect the results of successively calling the `quickref-guess-topics-functions'
-and return the guessed topics as a list."
+  "Successively call `quickref-guess-topic-functions` and return the guessed topics as a list."
   (let ((guesses (-reject 'null (mapcar 'funcall quickref-guess-topics-functions))))
     (-distinct
      (-flatten (cond
@@ -134,8 +130,7 @@ and return the guessed topics as a list."
               (mapcar 'symbol-name active-modes))))
 
 (defun quickref-read-topic ()
-  "Read a topic name, using `ido-completing-read' (or
-`completing-read' if unavailable)."
+  "Read a topic name."
   (let ((topic-names (mapcar 'car quickref-refs))
         (guessed (car (quickref-guess-topics))))
     (if (fboundp 'ido-completing-read)
@@ -143,6 +138,7 @@ and return the guessed topics as a list."
       (completing-read "Topic: " topic-names nil nil  nil nil guessed))))
 
 (defun quickref-read-label (&optional topic)
+  "Read a label name, optionally those relating to TOPIC."
   (let ((default-labels (when topic (mapcar 'car (cdr (assoc topic quickref-refs))))))
     (if default-labels
         (if (fboundp 'ido-completing-read)
@@ -151,9 +147,11 @@ and return the guessed topics as a list."
       (read-from-minibuffer "Label: "))))
 
 (defun quickref-read-note ()
+  "Read a note."
   (read-from-minibuffer "Note: "))
 
 (defun quickref-format (label &optional note)
+  "Format a single quickref LABEL and NOTE value for display."
   (let ((label (if (consp label) (car label) label))
         (note  (if (consp label) (cdr label) note)))
     (format "%s %s"
@@ -161,13 +159,14 @@ and return the guessed topics as a list."
             (funcall quickref-format-note-function note))))
 
 (defun quickref-notes (topic)
-  "Returns the notes for the given topic."
+  "Return the notes for the given TOPIC."
   (cdr (assoc topic quickref-refs)))
 
 (defun quickref-join-into-lines (msgs sep)
-  "Joins series of strings MSGS with SEP, inserting a newline before
-any string that would cause the length of the current line to exceed
-the width of the echo area."
+  "Joins series of strings MSGS with SEP.
+
+Inserts a newline before any string that would cause the length of the
+current line to exceed the width of the echo area."
   (let ((ea-width (1- (window-width (minibuffer-window))))
         (reduction (lambda (lines msg)
                      (let ((curline (car lines))
@@ -192,7 +191,7 @@ the width of the echo area."
   (get-buffer-create "*QuickRef*"))
 
 (defun quickref-display-topics-in-buffer (buf topics)
-  "Display the quickref notes for TOPICS in buffer BUF."
+  "Use buffer BUF to display the quickref notes for TOPICS."
   (with-current-buffer buf
     (delete-region (point-min) (point-max))
     (dolist (topic topics)
@@ -204,21 +203,21 @@ the width of the echo area."
     (--first (eq buf (window-buffer it)) (window-list))))
 
 (defun quickref-split-window ()
-  "Create a new window suitable for displaying a quickref by splitting
-the selected window."
+  "Create a window for displaying a quickref by splitting the selected window."
   (save-excursion (split-window-below -10)))
 
 ;; Interactive
 ;;;###autoload
 (defun quickref-in-echo-area (topics)
-  "Display quickref in the echo area."
+  "Display quickref about TOPICS in the echo area."
   (interactive (list (quickref-interactive-topics)))
   (let ((notes (-reject 'null (mapcar 'quickref-notes topics))))
     (funcall quickref-message-function "%s" (quickref-build-message (apply 'append notes)))))
 
 ;;;###autoload
 (defun quickref-in-window (topics)
-  "Display quickref in a window at the bottom of the current window.
+  "Display quickref about TOPICS in a window.
+
 Use `quickref-dismiss-window' to hide it again."
   (interactive (list (quickref-interactive-topics)))
   (let ((buf (quickref-find-buffer))
@@ -234,7 +233,7 @@ Use `quickref-dismiss-window' to hide it again."
 
 ;;;###autoload
 (defun quickref-add-note (topic label note)
-  "Add a new quickref note."
+  "Add quickref about TOPIC labeled LABEL with value NOTE."
   (interactive (list (quickref-read-topic)
                      (quickref-read-label)
                      (quickref-read-note)))
@@ -246,7 +245,7 @@ Use `quickref-dismiss-window' to hide it again."
 
 ;;;###autoload
 (defun quickref-delete-note (topic label)
-  "Delete a quickref note."
+  "Delete the note about TOPIC with label LABEL."
   (interactive
    (let ((topic (quickref-read-topic)))
      (list topic (quickref-read-label topic))))
@@ -255,8 +254,7 @@ Use `quickref-dismiss-window' to hide it again."
 
 ;;;###autoload
 (defun quickref-load-save-file ()
-  "If `quickref-save-file' exists, sets `quickref-refs' to
-the contents therein."
+  "If `quickref-save-file' exists, set `quickref-refs' to its contents."
   (interactive)
   (when (file-exists-p quickref-save-file)
     (with-temp-buffer
@@ -265,8 +263,7 @@ the contents therein."
 
 ;;;###autoload
 (defun quickref-write-save-file ()
-  "Writes the pretty printed contents of `quickref-refs' to
-the file at `quickref-save-file'."
+  "Write the pretty printed contents of `quickref-refs' to `quickref-save-file'."
   (interactive)
   (save-excursion
     (find-file quickref-save-file)
